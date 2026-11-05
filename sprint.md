@@ -1,4 +1,4 @@
-# Registro de Não Conformidade · sprints até o MVP
+﻿# Registro de Não Conformidade · sprints até o MVP
 
 > Arquitetura: HTML monolítico, offline first (ver `contexto.md`). Sprints de 1 semana.
 
@@ -13,6 +13,7 @@
 | 4 | Feito em 30/10/2026. Arquivo do setor (RN06), plano (FOR 2) e avaliação (FOR 3); código em `src/sprint4.js`. |
 | 5 | Feito em 30/10/2026. Painel com 3 gráficos SVG, vencidas, tempo médio por etapa e recorrência (RN05). |
 | 6 | Feito em 30/10/2026. Roteiro e piloto em `modelos/roteiro-aceite.md`. |
+| 7 | Feito em 03/11/2026: relação do setor para impressão, responsável pelo plano/avaliação, registro de quem importou e "Minhas RNCs" pelo setor. Modelo oficial e autenticação real continuam externos. |
 
 A planilha `respostas-forms-ficticio.csv` tem colunas **supostas**; trocar pelo cabeçalho real do Forms no Sprint 0.
 
@@ -78,3 +79,59 @@ A planilha `respostas-forms-ficticio.csv` tem colunas **supostas**; trocar pelo 
 - [x] Roteiro: importar, validar, exportar para o setor, receber o plano, ver o painel.
 - [x] Piloto de 30 dias na Diretoria de Laboratório Forense.
 - [x] Comparar com a linha de base e atualizar `PROJETO.md` e `README.md`.
+
+## Sprint 7 · Correções do feedback (03/11/2026)
+
+> Feedback de Sabrina (notas 3 e 4). O importador do `.xlsx` oficial e o Google Planilhas já foram feitos nesta etapa.
+
+### Já feito
+- [x] Importar o `.xlsx` oficial com as 23 colunas traduzidas e descartar nome/e-mail (RN07).
+- [x] Sincronizar com o Google Planilhas por CSV público.
+
+### Código
+- [x] Gerar a RNC em documento para impressão/PDF (`#/rnc/:id/documento`), com identificação, ocorrência, requisitos, plano, avaliação, etapas e assinaturas. Falta conferir com o modelo oficial.
+- [x] Nomenclatura oficial das categorias: ADM, AMB, PES, REA, EQP e MPA, com a descrição e a sigla na ficha.
+- [x] Documento por RNC disponível no `#/minhas` (link "Documento").
+- [x] Gerar a relação do setor para impressão (além do pacote `.json`), com botão de imprimir.
+- [x] Login/perfil por setor e registro de quem registrou e de quem respondeu. (contexto do perfil + `registrado_por` + responsável no plano/avaliação)
+- [x] Prazo de complemento em 5 dias úteis (com fim de semana fora) e plano em 30 dias.
+- [x] "Minhas RNCs": identificação de quem fez e responsável no plano/avaliação. A autenticação real segue externa.
+
+### Decisão do setor
+- [ ] Modelo oficial da RNC e das categorias. As categorias oficiais já estão no app; falta conferir o documento com o modelo da CQUAL.
+- [ ] Regras de login e permissão por setor. Premissa: contexto do setor no perfil; a autenticação real depende da TI.
+- [x] 5 dias úteis implementados; quem responde fica no campo de responsável do plano/avaliação. Confirmar no aceite.
+- [ ] Testar a planilha real compartilhada (link público).
+
+**Pronto quando**: uma RNC vira o documento oficial, o setor recebe o arquivo e o prazo de complemento conta em dias úteis.
+
+
+## Sprint 8 · ID da planilha e setores (04/11/2026)
+
+> Pedido da Sabrina pelo WhatsApp em 04/11/2026: "meu app tá criando um código ao invés de pegar o da própria planilha". Ela limpou a planilha no Google (12 linhas, `DLF/2026-008` a `DLF/2026-019`) e mandou o link, que já é o padrão do app (`URL_PLANILHA`). Commit `0588c5f`.
+
+### Causa
+- Os dados fictícios usam `DLF/2026-001` a `020`, os mesmos números da planilha real. Na importação, a linha real era contada como "já existente" e não era gravada, então a tela mostrava o registro fictício.
+- Um ID fora do padrão exato `DIRETORIA/ANO-SEQ` (espaço, minúscula) era trocado por um gerado.
+- A RNC importada antes com código gerado era reconhecida pelo conteúdo (`chave_importacao`) e ficava com o código antigo.
+
+### Feito
+- [x] O "ID ocorrência" é a fonte de verdade: só tira espaços e põe em maiúsculas (`numeroDaPlanilha`). Fora do padrão, mantém e avisa. Só gera quando a célula está vazia.
+- [x] Registro fictício (sem `chave_importacao`) com o mesmo número é substituído, e as etapas, planos e avaliações dele saem junto (`removerRnc`).
+- [x] RNC importada antes com código gerado é renumerada para o ID da planilha, com `numero_anterior` guardado (`renumerarRnc`).
+- [x] Setores por extenso e escritos de vários jeitos viram uma sigla só pelo catálogo `SETORES_POLITEC` (11 unidades). Unidade fora do catálogo entra no cadastro com sigla pelas iniciais; texto sem unidade fica como `ADEF` (a definir na validação). Os setores novos entram na store `setores`.
+- [x] RN07: da coluna "Pessoas ou setores envolvidos" só a unidade entra no app (`envolvidosSemNome`); o nome de pessoa fica de fora.
+- [x] Reimportar atualiza os setores e os envolvidos das RNCs já importadas, sem mexer nas etapas.
+- [x] Ficha (`#/rnc/:id`) mostra sigla e nome do setor; o documento para impressão mostra o nome.
+- [x] Testes: 3 testes embutidos (18/18 no `#/testes`) e os cenários `s11_numero_da_planilha` e `s12_setores_da_planilha` (11/11 cenários).
+- [x] Conferido com a planilha nova da Sabrina: 12 novas, 0 recusadas, 7 setores no painel (GMLROO 4, GNEC 3), nenhum nome de pessoa no backup.
+
+### Falta (decisão do setor)
+- [ ] Confirmar as siglas assumidas (só a CPBM é conhecida, pelo nome do documento do AutoCrat). Premissa em `Apps/PREMISSAS.md`, seção 18. A troca é na lista `SETORES_POLITEC` de `src/app.js`.
+- [ ] A Sabrina usar "Apagar todos os dados" antes de importar, para tirar os fictícios.
+- [ ] Testar a sincronização pelo link (a planilha precisa estar como "qualquer pessoa com o link pode ver").
+- [ ] Enviar a versão para o repositório da Sabrina (`Sabrinaelllen1209`), se ela continuar por lá. Até agora só foi para `renato0503/Aula_politec`.
+
+**Observação**: a planilha `Registro de Não Conformidade Oficial 1.xlsx` (na pasta do app e em `Apps/`) tem nomes e e-mails reais e **não** vai para o git. Os cenários `s7`, `s11` e `s12` dependem da cópia da pasta do app.
+
+**Pronto quando**: a planilha real entra com os códigos dela, cada unidade aparece uma vez no painel e nenhum nome de pessoa fica no app.
